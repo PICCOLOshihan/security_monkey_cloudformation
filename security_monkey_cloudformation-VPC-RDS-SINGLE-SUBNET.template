@@ -1,6 +1,6 @@
 {
 	"AWSTemplateFormatVersion": "2010-09-09",
-	"Description": "AWS CloudFormation Template for Security Monkey (master branch code / v0.8.0 (2017-02-21)). With EC2 instance, Multi AZ RDS Postgres database, Security group, it creates a VPC and all needed subnets",
+	"Description": "AWS CloudFormation Template for Security Monkey (master branch code / v1.1.3 (2018-05-24)). With EC2 instance, Multi AZ RDS Postgres database, Security group, it creates a VPC and all needed subnets",
 	"Parameters": {
 		"AZ1": {
 			"Type": "AWS::EC2::AvailabilityZone::Name",
@@ -22,7 +22,7 @@
 			"Description": "EC2 instance type",
 			"Type": "String",
 			"Description": "Type of EC2 instance for the Security Monkey instance",
-			"Default": "m3.large",
+			"Default": "m5.large",
 			"AllowedValues": [
 				"t2.medium",
 				"t2.large",
@@ -31,10 +31,9 @@
 				"m4.2xlarge",
 				"m4.4xlarge",
 				"m4.10xlarge",
-				"m3.medium",
-				"m3.large",
-				"m3.xlarge",
-				"m3.2xlarge",
+				"m5.large",
+				"m5.xlarge",
+				"m5.2xlarge",
 				"m4.xlarge",
 				"c4.large",
 				"c4.xlarge",
@@ -76,17 +75,16 @@
 			"Default": "5432"
 		},
 		"RDSInstanceType": {
-			"Default": "db.m3.medium",
+			"Default": "db.m5.large",
 			"Description": "Instance type for the Postgres DB instance",
 			"Type": "String",
 			"AllowedValues": [
 				"db.t2.small",
 				"db.t2.medium",
 				"db.t2.large",
-				"db.m3.medium",
-				"db.m3.large",
-				"db.m3.xlarge",
-				"db.m3.2xlarge",
+				"db.m5.large",
+				"db.m5.xlarge",
+				"db.m5.2xlarge",
 				"db.r3.large",
 				"db.r3.xlarge",
 				"db.r3.2xlarge",
@@ -160,43 +158,43 @@
 	"Mappings": {
 		"LINUXAMI": {
 			"us-east-1": {
-				"AMI": "ami-2d57433a"
+				"AMI": "ami-0565af6e282977273"
 			},
 			"us-east-2": {
-				"AMI": "ami-88b6eced"
+				"AMI": "ami-0e7589a8422e3270f"
 			},
 			"us-west-1": {
-				"AMI": "ami-e7277687"
+				"AMI": "ami-0ff7f191316dba328"
 			},
 			"us-west-2": {
-				"AMI": "ami-900ebaf0"
+				"AMI": "ami-0e7589a8422e3270f"
 			},
 			"eu-west-1": {
-				"AMI": "ami-75c9e906"
+				"AMI": "ami-08660f1c6fb6b01e7"
 			},
 			"eu-central-1": {
-				"AMI": "ami-162ded79"
+				"AMI": "ami-05af84768964d3dc0"
 			},
 			"ap-southeast-1": {
-				"AMI": "ami-96d17ff5"
+				"AMI": "ami-070bdb8798e3aeba7"
 			},
 			"ap-southeast-2": {
-				"AMI": "ami-c6c2f9a5"
+				"AMI": "ami-001dae151248753a2"
 			},
 			"ap-northeast-1": {
-				"AMI": "ami-90117af7"
+				"AMI": "ami-02794be3fb6de50e1"
 			},
 			"ap-northeast-2": {
-				"AMI": "ami-d1a274bf"
+				"AMI": "ami-067c32f3d5b9ace91"
 			},
 			"sa-east-1": {
-				"AMI": "ami-707ce41c"
+				"AMI": "ami-05eaf9b21ed6dee3c"
 			},
 			"ca-central-1": {
-				"AMI": "ami-374dff53"
+				"AMI": "ami-03d12de7d0e87fbf3"
 			},
 			"ap-south-1": {
-				"AMI": "ami-dac6b1b5"
+				"AMI": "ami-0a574895390037a62"
 			}
 		},
 		"SubnetConfig": {
@@ -515,7 +513,7 @@
 								"#!/bin/bash -x\n",
 								"sudo apt-get update\n",
 								"sudo apt-get -y upgrade\n",
-								"sudo apt-get install -y python-pip python-dev python-psycopg2 libpq-dev nginx supervisor git libffi-dev\n",
+								"sudo apt-get install -y python-pip python-dev python-psycopg2 libpq-dev nginx supervisor git libffi-dev virtualenv\n",
 								"sudo pip install --upgrade ndg-httpsclient\n",
 								"sudo pip install aws-cfn-bootstrap\n",
 								"/usr/local/bin/cfn-init",
@@ -548,6 +546,14 @@
 								"cd /usr/local/src\n",
 								"sudo git clone --depth 1 --branch master https://github.com/Netflix/security_monkey.git\n",
 								"cd security_monkey\n",
+								"virtualenv venv\n",
+								"source venv/bin/activate\n",
+								"pip install --upgrade setuptools\n",
+								"pip install --upgrade pip\n",
+								"pip install --upgrade urllib3\n",
+								"pip install google-compute-engine\n",
+								"pip install cloudaux\n",
+								"pip install -e ."
 								"sudo python setup.py install\n",
 								"cd ..\n",
 								"curl https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -\n",
@@ -555,13 +561,14 @@
 								"curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > dart_stable.list\n",
 								"sudo mv dart_stable.list /etc/apt/sources.list.d/dart_stable.list\n",
 								"sudo apt-get update\n",
-								"sudo apt-get install -y dart\n",
+								"sudo apt-get install -y dart=1.24.3-1\n",
 								"cd /usr/local/src/security_monkey/dart\n",
 								"sudo /usr/lib/dart/bin/pub get\n",
 								"sudo /usr/lib/dart/bin/pub build\n",
 								"sudo /bin/mkdir -p /usr/local/src/security_monkey/security_monkey/static/\n",
 								"sudo /bin/cp -R /usr/local/src/security_monkey/dart/build/web/* /usr/local/src/security_monkey/security_monkey/static/\n",
-								"sudo sed -i 's/postgres:securitymonkeypassword@localhost:5432\\/secmonkey/", {
+								"sudo chgrp -R www-data /usr/local/src/security_monkey/\n",
+								"sudo sed -i 's/securitymonkeyuser:securitymonkeypassword@localhost:5432\\/secmonkey/", {
 									"Ref": "RDSUsername"
 								},
 								":", {
@@ -579,24 +586,25 @@
 								"\\/", {
 									"Ref": "RDSDBName"
 								},
-								"/g' /usr/local/src/security_monkey/env-config/config-deploy.py\n",
+								"/g' /usr/local/src/security_monkey/env-config/config.py\n",
 								"export INSTANCE_PUBLIC_HOST_NAME=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)\n",
-								"sudo sed -i s/ec2-XX-XXX-XXX-XXX.compute-1.amazonaws.com/$INSTANCE_PUBLIC_HOST_NAME/g /usr/local/src/security_monkey/env-config/config-deploy.py\n",
+								"sudo sed -i s/ec2-XX-XXX-XXX-XXX.compute-1.amazonaws.com/$INSTANCE_PUBLIC_HOST_NAME/g /usr/local/src/security_monkey/env-config/config.py\n",
 								"export RANDOM_KEY=$(date +%s | sha256sum | base64 | head -c 32)\n",
-								"sudo sed -i s/\\<INSERT_RANDOM_STRING_HERE\\>/$RANDOM_KEY/g /usr/local/src/security_monkey/env-config/config-deploy.py\n",
-								"sudo sed -i 's/DEBUG/", { "Ref": "SMLogLevel" }, "/g' /usr/local/src/security_monkey/env-config/config-deploy.py\n",
-								"sudo sed -i 's/securitymonkey@example.com/", { "Ref": "SMMailDefaultSender" }, "/g' /usr/local/src/security_monkey/env-config/config-deploy.py\n",
-								"sudo sed -i 's/SECURITY_TEAM_EMAIL\\ =\\ \\[\\]/SECURITY_TEAM_EMAIL\\ \\=\\ \\[\\ \"",{ "Ref": "SMSecurityTeamEmail" },"\"\\ \\]/g' /usr/local/src/security_monkey/env-config/config-deploy.py\n",
-								"sudo sed -i 's/EMAILS_USE_SMTP = False/EMAILS_USE_SMTP = ", { "Ref": "SMUseSMTP" }, "/g' /usr/local/src/security_monkey/env-config/config-deploy.py\n",
-								"sudo sed -i 's/smtp.example.com/", { "Ref": "SMMailServer" }, "/g' /usr/local/src/security_monkey/env-config/config-deploy.py\n",
-								"sudo sed -i 's/465/", { "Ref": "SMMailPort" }, "/g' /usr/local/src/security_monkey/env-config/config-deploy.py\n",
-								"sudo sed -i 's/username/", { "Ref": "SMMailUserName" }, "/g' /usr/local/src/security_monkey/env-config/config-deploy.py\n",
-								"sudo sed -i 's/password/", { "Ref": "SMMailPassword" }, "/g' /usr/local/src/security_monkey/env-config/config-deploy.py\n",
-								"export SECURITY_MONKEY_SETTINGS=/usr/local/src/security_monkey/env-config/config-deploy.py\n",
+								"sudo sed -i s/\\<INSERT_RANDOM_STRING_HERE\\>/$RANDOM_KEY/g /usr/local/src/security_monkey/env-config/config.py\n",
+								"sudo sed -i 's/DEBUG/", { "Ref": "SMLogLevel" }, "/g' /usr/local/src/security_monkey/env-config/config.py\n",
+								"sudo sed -i 's/securitymonkey@example.com/", { "Ref": "SMMailDefaultSender" }, "/g' /usr/local/src/security_monkey/env-config/config.py\n",
+								"sudo sed -i 's/SECURITY_TEAM_EMAIL\\ =\\ \\[\\]/SECURITY_TEAM_EMAIL\\ \\=\\ \\[\\ \"",{ "Ref": "SMSecurityTeamEmail" },"\"\\ \\]/g' /usr/local/src/security_monkey/env-config/config.py\n",
+								"sudo sed -i 's/EMAILS_USE_SMTP = False/EMAILS_USE_SMTP = ", { "Ref": "SMUseSMTP" }, "/g' /usr/local/src/security_monkey/env-config/config.py\n",
+								"sudo sed -i 's/smtp.example.com/", { "Ref": "SMMailServer" }, "/g' /usr/local/src/security_monkey/env-config/config.py\n",
+								"sudo sed -i 's/465/", { "Ref": "SMMailPort" }, "/g' /usr/local/src/security_monkey/env-config/config.py\n",
+								"sudo sed -i 's/username/", { "Ref": "SMMailUserName" }, "/g' /usr/local/src/security_monkey/env-config/config.py\n",
+								"sudo sed -i 's/password/", { "Ref": "SMMailPassword" }, "/g' /usr/local/src/security_monkey/env-config/config.py\n",
+								"export SECURITY_MONKEY_SETTINGS=/usr/local/src/security_monkey/env-config/config.py\n",
 								"cd /usr/local/src/security_monkey/\n",
 								"sudo -E python manage.py db upgrade\n",
-								"sudo chown www-data /var/log/security_monkey/securitymonkey.log\n",
-								"sudo cp /usr/local/src/security_monkey/supervisor/security_monkey.conf /etc/supervisor/conf.d/security_monkey.conf\n",
+								"sudo chown www-data:www-data /var/log/security_monkey/securitymonkey.log\n",
+								"sudo chmod 664 /var/log/security_monkey/securitymonkey.log\n",
+								"sudo cp /usr/local/src/security_monkey/supervisor/*.conf /etc/supervisor/conf.d/\n",
 								"sudo service supervisor restart\n",
 								"cd ~\n",
 								"sudo openssl genrsa -out server.key 2048\n",
