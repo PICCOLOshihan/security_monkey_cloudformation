@@ -19,7 +19,6 @@
         "ConstraintDescription" : "Must be a valid IAM Role"
     },
 		"SecurityMonkeyInstanceType": {
-			"Description": "EC2 instance type",
 			"Type": "String",
 			"Description": "Type of EC2 instance for the Security Monkey instance",
 			"Default": "m5.large",
@@ -553,7 +552,7 @@
 								"pip install --upgrade urllib3\n",
 								"pip install google-compute-engine\n",
 								"pip install cloudaux\n",
-								"pip install -e ."
+								"pip install -e .",
 								"sudo python setup.py install\n",
 								"cd ..\n",
 								"curl https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -\n",
